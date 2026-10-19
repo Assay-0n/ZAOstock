@@ -62,7 +62,7 @@ describe('the stage-manager run sheet follows the run of show', () => {
 
 describe('the evening, as ruled on 14 September', () => {
   it('is the after-party at Black Moon with Steve on the decks', () => {
-    expect(sheet).toMatch(/After-party at Black Moon, DJ run by Steve, from six/);
+    expect(sheet).toMatch(/After-party at Black Moon, North Creek, hosted by Black Moon, from six/);
   });
 
   it('does not invent a close time Black Moon has not given', () => {
@@ -82,9 +82,12 @@ describe('what the sheet still owes a name', () => {
     expect(sheet).toMatch(/Maceo is on video/);
   });
 
-  it('keeps the between-sets mic open, and says whose it was', () => {
-    expect(sheet).toMatch(/Hurricane/);
-    expect(sheet).toMatch(/that name is open/);
+  it('names the MC for the whole day, ruled 2026-09-26, not left open', () => {
+    // Hurricane was the between-sets voice, went 2026-09-10, and the name sat
+    // open until Zaal ruled himself the sole MC for the whole day. This sheet
+    // used to say the name was still open - that framing is now wrong.
+    expect(sheet).toMatch(/Zaal is the MC for the whole day, ruled 2026-09-26/);
+    expect(sheet).not.toMatch(/that name is open/);
   });
 
   it('flags AV cover during the set DCoop plays himself', () => {

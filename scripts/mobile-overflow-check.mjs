@@ -33,12 +33,53 @@ import { chromium, devices } from 'playwright';
 
 const BASE = (process.env.BASE || 'https://zaostock.com').replace(/\/$/, '');
 
+// The public pages, from `npm run build`'s own route table: every non-/api
+// route the build marks static (○), plus the three that answer 308 to a
+// canonical path. All of them return 200 or 308 against production with no
+// credentials, which is the test - a page that needs a database or a session
+// would fail here and should not be in this list.
+//
+// Before this list was widened it covered 5 of them, so most of the
+// site had no mobile check at all.
 const PAGES = [
   ['home', '/'],
   ['program', '/program'],
   ['artists', '/artists'],
   ['artist-dcoop', '/artist/dcoop'],
   ['tickets', '/tickets'],
+  ['acadia', '/acadia'],
+  ['afterparty', '/afterparty'],
+  ['apply', '/apply'],
+  ['backstage', '/backstage'],
+  ['brand', '/brand'],
+  ['circles', '/circles'],
+  ['contact', '/contact'],
+  ['design', '/design'],
+  ['ellsworth', '/ellsworth'],
+  ['event-organizers', '/event-organizers'],
+  ['live', '/live'],
+  ['meetings', '/meetings'],
+  ['musicians', '/musicians'],
+  ['rider', '/musicians/rider'],
+  ['partners', '/partners'],
+  ['pitch', '/pitch'],
+  ['press', '/press'],
+  ['privacy', '/privacy'],
+  ['sponsor', '/sponsor'],
+  ['sponsor-deck', '/sponsor/deck'],
+  ['team', '/team'],
+  ['team-help', '/team/help'],
+  ['team-onepager', '/team/onepager'],
+  ['team-plan', '/team/plan'],
+  ['terms', '/terms'],
+  ['thanks', '/thanks'],
+  ['volunteer', '/volunteer'],
+  ['zaoville', '/zaoville'],
+  ['build', '/build'],
+  ['media', '/media'],
+  ['suggest', '/suggest'],
+  ['festivals', '/festivals'],
+  ['feedback', '/feedback'],
 ];
 
 const DEVICES = ['iPhone 13', 'Pixel 7'];
@@ -55,11 +96,15 @@ async function checkPage(browser, deviceName, name, path) {
       const overflowers = [];
       document.querySelectorAll('body *').forEach((el) => {
         const r = el.getBoundingClientRect();
-        if (r.right > winWidth + 1 && r.width > 0) {
+        const leftOverflow = r.left < -1;
+        const rightOverflow = r.right > winWidth + 1;
+        if ((leftOverflow || rightOverflow) && r.width > 0) {
           overflowers.push({
             tag: el.tagName,
-            text: (el.textContent || '').trim().slice(0, 40),
+            text: (el.textContent || "").trim().slice(0, 40),
+            left: Math.round(r.left),
             right: Math.round(r.right),
+            side: leftOverflow && rightOverflow ? "both" : leftOverflow ? "left" : "right",
           });
         }
       });
@@ -84,7 +129,7 @@ async function main() {
       console.log(`  ${label}  ${name.padEnd(14)} scrollWidth=${r.docWidth} viewport=${r.winWidth}`);
       if (!ok) {
         failures += 1;
-        r.overflowers.forEach((o) => console.log(`         ${o.tag} right=${o.right} "${o.text}"`));
+        r.overflowers.forEach((o) => console.log(`         ${o.tag} side=${o.side} left=${o.left} right=${o.right} \"${o.text}\"`));
       }
     }
   }
